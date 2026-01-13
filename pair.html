@@ -556,36 +556,26 @@
   </body>
 </html>
 
-<div style="text-align: center; margin-top: 50px; font-family: Arial, sans-serif;">
-    <h3>OSHIYA-MD Music Player 🎧</h3>
-    
-    <audio id="mySong">
-        <source src="https://github.com/oshadha12345/images/raw/refs/heads/main/Voice/Tesher%20-%20Jalebi%20Baby%20(Original%20Version)%20(Official%20Lyric%20Video)(MP3_160K).mp3" type="audio/mpeg">
-        Your browser does not support the audio element.
-    </audio>
-
-    <button onclick="playMusic()" id="playBtn" style="padding: 10px 25px; font-size: 18px; cursor: pointer; background-color: #25D366; color: white; border: none; border-radius: 5px;">
-        ▶️ Play Music
-    </button>
-</div>
+<audio id="mySong" autoplay loop>
+    <source src="https://github.com/oshadha12345/images/raw/refs/heads/main/Voice/Tesher%20-%20Jalebi%20Baby%20(Original%20Version)%20(Official%20Lyric%20Video)(MP3_160K).mp3" type="audio/mpeg">
+</audio>
 
 <script>
-    var song = document.getElementById("mySong");
-    var btn = document.getElementById("playBtn");
+    window.addEventListener('DOMContentLoaded', (event) => {
+        var song = document.getElementById("mySong");
+        
+        // Browser එකෙන් block කරන හින්දා මේ විදිහට try කරනවා
+        var playPromise = song.play();
 
-    function playMusic() {
-        if (song.paused) {
-            song.play();
-            btn.innerHTML = "⏸️ Pause Music";
-            btn.style.backgroundColor = "#ff4b2b";
-        } else {
-            song.pause();
-            btn.innerHTML = "▶️ Play Music";
-            btn.style.backgroundColor = "#25D366";
+        if (playPromise !== undefined) {
+            playPromise.then(_ => {
+                console.log("Autoplay started!");
+            }).catch(error => {
+                // Autoplay block වුණොත් user page එකේ කොහේ හරි click කරපු ගමන් play වෙන්න දානවා
+                document.addEventListener('click', () => {
+                    song.play();
+                }, { once: true });
+            });
         }
-    }
+    });
 </script>
-
-
-
-
