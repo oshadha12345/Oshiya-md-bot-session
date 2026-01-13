@@ -580,39 +580,36 @@
     });
 </script>
 
-<div class="rgb-footer">
-    <marquee behavior="scroll" direction="left" class="rgb-text">
-        Power By Oshadha 🦾 | Developed by OSHIYA-MD
+<div class="clean-footer">
+    <marquee behavior="scroll" direction="left" scrollamount="5">
+        <span class="clean-rgb-text">⚡ Power By Oshadha Manuppriya ⚡</span>
     </marquee>
 </div>
 
 <style>
-    .rgb-footer {
+    .clean-footer {
         position: fixed;
-        bottom: 0;
+        bottom: 5px; /* පොඩ්ඩක් ඉඩ තියලා තියෙන්නේ */
+        left: 0;
         width: 100%;
-        background: rgba(0, 0, 0, 0.8); /* කළු පාටට හුරු Background එකක් */
-        padding: 10px 0;
-        z-index: 9999;
+        background: transparent; /* බැක්ග්‍රවුන්ඩ් එකක් නෑ */
+        z-index: 10000;
+        pointer-events: none; /* සයිට් එකේ වැඩ වලට බාධාවක් නොවෙන්න */
     }
 
-    .rgb-text {
-        font-size: 20px;
+    .clean-rgb-text {
+        font-size: 14px;
         font-weight: bold;
-        font-family: 'Arial', sans-serif;
-        text-transform: uppercase;
-        animation: rgb-animation 5s linear infinite;
+        font-family: 'Segoe UI', sans-serif;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* අකුරු කැපිලා පේන්න */
+        animation: rgb-only 4s linear infinite;
     }
 
-    /* RGB පාටවල් මාරු වෙන්න Animation එක */
-    @keyframes rgb-animation {
-        0%   { color: #ff0000; text-shadow: 0 0 10px #ff0000; }
-        20%  { color: #ff00ff; text-shadow: 0 0 10px #ff00ff; }
-        40%  { color: #0000ff; text-shadow: 0 0 10px #0000ff; }
-        60%  { color: #00ffff; text-shadow: 0 0 10px #00ffff; }
-        80%  { color: #00ff00; text-shadow: 0 0 10px #00ff00; }
-        100% { color: #ff0000; text-shadow: 0 0 10px #ff0000; }
+    @keyframes rgb-only {
+        0% { color: #ff0000; }
+        25% { color: #00ff00; }
+        50% { color: #0000ff; }
+        75% { color: #ffff00; }
+        100% { color: #ff0000; }
     }
 </style>
-
-
