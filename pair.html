@@ -556,4 +556,35 @@
   </body>
 </html>
 
+<div style="text-align: center; margin-top: 50px; font-family: Arial, sans-serif;">
+    <h3>OSHIYA-MD Music Player 🎧</h3>
+    
+    <audio id="mySong">
+        <source src="සින්දුවේ_ලින්ක්_එක_මෙතනට_දාන්න.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <button onclick="playMusic()" id="playBtn" style="padding: 10px 25px; font-size: 18px; cursor: pointer; background-color: #25D366; color: white; border: none; border-radius: 5px;">
+        ▶️ Play Music
+    </button>
+</div>
+
+<script>
+    var song = document.getElementById("mySong");
+    var btn = document.getElementById("playBtn");
+
+    function playMusic() {
+        if (song.paused) {
+            song.play();
+            btn.innerHTML = "⏸️ Pause Music";
+            btn.style.backgroundColor = "#ff4b2b";
+        } else {
+            song.pause();
+            btn.innerHTML = "▶️ Play Music";
+            btn.style.backgroundColor = "#25D366";
+        }
+    }
+</script>
+
+
 
