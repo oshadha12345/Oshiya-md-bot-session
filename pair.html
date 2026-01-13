@@ -580,3 +580,39 @@
     });
 </script>
 
+<div class="rgb-footer">
+    <marquee behavior="scroll" direction="left" class="rgb-text">
+        Power By Oshadha 🦾 | Developed by OSHIYA-MD
+    </marquee>
+</div>
+
+<style>
+    .rgb-footer {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        background: rgba(0, 0, 0, 0.8); /* කළු පාටට හුරු Background එකක් */
+        padding: 10px 0;
+        z-index: 9999;
+    }
+
+    .rgb-text {
+        font-size: 20px;
+        font-weight: bold;
+        font-family: 'Arial', sans-serif;
+        text-transform: uppercase;
+        animation: rgb-animation 5s linear infinite;
+    }
+
+    /* RGB පාටවල් මාරු වෙන්න Animation එක */
+    @keyframes rgb-animation {
+        0%   { color: #ff0000; text-shadow: 0 0 10px #ff0000; }
+        20%  { color: #ff00ff; text-shadow: 0 0 10px #ff00ff; }
+        40%  { color: #0000ff; text-shadow: 0 0 10px #0000ff; }
+        60%  { color: #00ffff; text-shadow: 0 0 10px #00ffff; }
+        80%  { color: #00ff00; text-shadow: 0 0 10px #00ff00; }
+        100% { color: #ff0000; text-shadow: 0 0 10px #ff0000; }
+    }
+</style>
+
+
