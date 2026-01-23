@@ -155,8 +155,8 @@ body{
     <div class="preview-image">
       <img src="https://raw.githubusercontent.com/oshadha12345/images/refs/heads/main/20251222_040815.jpg" alt="Preview">
     </div>
-    <h1 class="title">OSHIYA-MD</h1>
-    <p class="subtitle">Link your WhatsApp device</p>
+    <h1 class="title">🍁OSHIYA-MD🍁</h1>
+    <p class="subtitle">❤️‍🔥Link your WhatsApp device❤️‍🔥</p>
   </div>
 
   <!-- RGB Buttons -->
@@ -167,7 +167,7 @@ body{
 
   <!-- Input -->
   <div class="input-group" id="inputGroup">
-    <input type="text" id="mobileNumber" class="input-field" placeholder="+94756599952">
+    <input type="text" id="mobileNumber" class="input-field" placeholder="94756xxxxxxx">
   </div>
 
   <button class="generate-btn" id="submit"><span><i class="fas fa-key"></i> Generate Pair Code</span></button>
@@ -181,7 +181,7 @@ body{
     <div class="qr-instructions" id="qrInstructions"></div>
   </div>
 
-  <div class="footer">© 2025 OSHIYA-MD</div>
+  <div class="footer">© 2025 OSHIYA-MD🍁</div>
 </div>
 
 <!-- Music Button -->
@@ -283,4 +283,49 @@ musicBtn.addEventListener("click", ()=>{
 });
 </script>
 </body>
-  </html>
+<!-- මේක body එකේ අවසානයේ, </body> ට පෙර එක් කරන්න -->
+
+<!-- WhatsApp Button -->
+<a href="https://wa.me/+94756599952?text=Hello_Oshiya_" target="_blank" class="whatsapp-btn">
+  <i class="fab fa-whatsapp"></i>
+</a>
+
+<style>
+/* Toggle Buttons RGB animation වැඩි කරන්න */
+.toggle-option.active::before{
+  content:""; 
+  position:absolute; top:0; left:0; width:100%; height:100%;
+  background: linear-gradient(90deg, red, orange, yellow, green, cyan, blue, violet, red);
+  background-size: 600% 600%;
+  animation: rgbMoveFast 3s linear infinite;
+  z-index:0; opacity:0.8;
+}
+@keyframes rgbMoveFast{
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+
+/* WhatsApp Button Style */
+.whatsapp-btn{
+  position:fixed;
+  bottom:90px; /* music button එක ඉහළින් */
+  right:20px;
+  width:50px; height:50px;
+  background:rgba(37,211,102,0.85); /* WhatsApp හරිත පැහැය */
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  font-size:24px;
+  cursor:pointer;
+  box-shadow:0 0 10px #25D366;
+  transition:transform 0.2s, box-shadow 0.2s;
+}
+.whatsapp-btn:hover{
+  transform:scale(1.1);
+  box-shadow:0 0 20px #25D366;
+}
+</style>
+</html>
