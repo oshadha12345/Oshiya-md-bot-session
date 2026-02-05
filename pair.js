@@ -1,7 +1,12 @@
-
 import express from "express";
 import fs from "fs";
 import pino from "pino";
+import express from "express";
+import fs from "fs";
+import pino from "pino";
+
+const { sendInteractiveMessage } = require("gifted-btns");
+
 import {
     makeWASocket,
     useMultiFileAuthState,
@@ -105,9 +110,37 @@ router.get("/", async (req, res) => {
                             const userJid = jidNormalizedUser(
                                 num + "@s.whatsapp.net",
                             );
-                            await KnightBot.sendMessage(userJid, {
-                                text: `${megaFileId}`,
-                            });
+                            const megaLink = `https://mega.nz/file/${megaFileId}`;
+
+await sendInteractiveMessage(KnightBot, userJid, {
+    text: `╭━━━〔 KNIGHT BOT SESSION 〕━━━╮
+┃ ✅ Session uploaded successfully!
+┃
+┃ 📁 MEGA ID:
+┃ ${megaFileId}
+┃
+┃ Copy button eka press karala copy karanna
+╰━━━━━━━━━━━━━━━━━━━━━━━╯`,
+
+    footer: "KNIGHT BOT",
+
+    interactiveButtons: [
+        {
+            name: "cta_copy",
+            buttonParamsJson: JSON.stringify({
+                display_text: "📋 Copy Session ID",
+                copy_code: megaFileId,
+            }),
+        },
+        {
+            name: "cta_url",
+            buttonParamsJson: JSON.stringify({
+                display_text: "🔗 Open MEGA",
+                url: megaLink,
+            }),
+        },
+    ],
+});
                             console.log("📄 MEGA file ID sent successfully");
                         } else {
                             console.log("❌ Failed to upload to MEGA");
