@@ -1,8 +1,6 @@
 import express from "express";
 import fs from "fs";
 import pino from "pino";
-import fs from "fs";
-import pino from "pino";
 
 const { sendInteractiveMessage } = require("gifted-btns");
 
