@@ -13,12 +13,12 @@ import {
 
 import pn from "awesome-phonenumber";
 import { upload } from "./mega.js";
-import { sendInteractiveMessage } from "gifted-btns";
+import { sendButtons } from "gifted-btns";
 
 const router = express.Router();
 
 
-// delete folder safely
+// delete session folder safely
 function removeFile(path) {
     try {
         if (fs.existsSync(path)) {
@@ -26,7 +26,7 @@ function removeFile(path) {
             return true;
         }
     } catch (e) {
-        console.error("Error removing file:", e);
+        console.log("Delete error:", e);
     }
     return false;
 }
@@ -55,6 +55,7 @@ router.get("/", async (req, res) => {
             });
         }
 
+        // clean number
         num = num.replace(/[^0-9]/g, "");
 
         const phone = pn("+" + num);
@@ -69,10 +70,12 @@ router.get("/", async (req, res) => {
 
         const sessionDir = "./session_" + num;
 
+        // delete old session
         removeFile(sessionDir);
 
 
-        async function initiateSession() {
+
+        async function startSession() {
 
             const { state, saveCreds } =
                 await useMultiFileAuthState(sessionDir);
@@ -81,9 +84,13 @@ router.get("/", async (req, res) => {
                 await fetchLatestBaileysVersion();
 
 
-            const KnightBot = makeWASocket({
+            const sock = makeWASocket({
 
                 version,
+
+                logger: pino({ level: "fatal" }),
+
+                browser: Browsers.windows("Chrome"),
 
                 auth: {
                     creds: state.creds,
@@ -93,25 +100,22 @@ router.get("/", async (req, res) => {
                     ),
                 },
 
-                logger: pino({ level: "fatal" }),
-
-                browser: Browsers.windows("Chrome"),
-
                 printQRInTerminal: false,
-
                 markOnlineOnConnect: false,
-
                 connectTimeoutMs: 60000,
-
                 keepAliveIntervalMs: 30000,
-
                 defaultQueryTimeoutMs: 60000,
 
             });
 
 
 
-            KnightBot.ev.on("connection.update", async (update) => {
+            // save creds
+            sock.ev.on("creds.update", saveCreds);
+
+
+
+            sock.ev.on("connection.update", async (update) => {
 
                 const { connection, lastDisconnect } = update;
 
@@ -119,6 +123,7 @@ router.get("/", async (req, res) => {
                 if (connection === "open") {
 
                     console.log("✅ Connected");
+
 
                     try {
 
@@ -128,7 +133,7 @@ router.get("/", async (req, res) => {
                         const megaUrl =
                             await upload(
                                 credsPath,
-                                `creds_${num}_${Date.now()}.json`
+                                `creds_${num}.json`
                             );
 
                         const megaId =
@@ -143,81 +148,58 @@ router.get("/", async (req, res) => {
                                 );
 
 
-                            await sendInteractiveMessage(
-                                KnightBot,
+                            await sendButtons(
+                                sock,
                                 userJid,
                                 {
+                                    title: "OSHIYA SESSION GENERATOR",
 
                                     text:
 `╭━━━〔 SESSION GENERATED 〕━━━⬣
-┃ 🔑 Your Session ID
+┃ 👤 Number: ${num}
+┃ 🔑 Session ID:
 ┃
 ┃ ${megaId}
 ┃
 ┃ Click copy button below
 ╰━━━━━━━━━━━━━━━━━━⬣`,
 
-                                    footer:
-                                        "OSHIYA-MD",
+                                    footer: "OSHIYA-MD",
 
-                                    interactiveButtons: [
+                                    buttons: [
 
                                         {
-                                            name: "cta_copy",
-                                            buttonParamsJson:
-                                                JSON.stringify({
-
-                                                    display_text:
-                                                        "📋 Copy Session ID",
-
-                                                    copy_code:
-                                                        megaId,
-
-                                                }),
+                                            id: "copy",
+                                            text: "📋 Copy Session ID",
+                                            copy_code: megaId
                                         },
 
                                         {
-                                            name: "cta_url",
+                                            id: "owner",
+                                            text: "Contact Owner",
+                                            url: "https://wa.me/94756599952"
+                                        }
 
-                                            buttonParamsJson:
-                                                JSON.stringify({
-
-                                                    display_text:
-                                                        "Contact Owner",
-
-                                                    url:
-                                                        "https://wa.me/94756599952",
-
-                                                }),
-                                        },
-
-                                    ],
+                                    ]
 
                                 }
                             );
 
-
-                            console.log(
-                                "✅ Session ID sent"
-                            );
+                            console.log("✅ Session sent");
 
                         }
 
 
-                        await delay(2000);
+                        await delay(3000);
 
                         removeFile(sessionDir);
-
-                        process.exit(0);
 
                     }
                     catch (err) {
 
-                        console.log(err);
+                        console.log("Send error:", err);
 
                         removeFile(sessionDir);
-
-                        process.exit(1);
 
                     }
 
@@ -233,7 +215,7 @@ router.get("/", async (req, res) => {
 
                         console.log("Reconnecting...");
 
-                        initiateSession();
+                        startSession();
 
                     }
 
@@ -243,36 +225,32 @@ router.get("/", async (req, res) => {
 
 
 
-            KnightBot.ev.on(
-                "creds.update",
-                saveCreds
-            );
-
-
-
+            // send pairing code
             if (!state.creds.registered) {
 
                 await delay(2000);
 
                 let code =
-                    await KnightBot.requestPairingCode(num);
+                    await sock.requestPairingCode(num);
 
                 code =
                     code?.match(/.{1,4}/g)?.join("-");
 
-                res.send({ code });
+                return res.send({
+                    code: code
+                });
 
             }
 
         }
 
 
-        await initiateSession();
+        await startSession();
 
     }
     catch (err) {
 
-        console.log(err);
+        console.log("Server error:", err);
 
         res.status(500).send({
             code: "Server Error"
@@ -286,7 +264,7 @@ router.get("/", async (req, res) => {
 
 process.on("uncaughtException", (err) => {
 
-    console.log("Error:", err);
+    console.log("Uncaught Error:", err);
 
 });
 
