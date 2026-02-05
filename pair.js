@@ -35,8 +35,8 @@ await removeFile(dirs);    num = num.replace(/[^0-9]/g, "");    const phone = pn
         {
             name: "cta_url",
             buttonParamsJson: JSON.stringify({
-                display_text: "🌐 Open MEGA",
-                url: megaUrl,
+                display_text: "💬 Contact Owner",
+                url: "https://wa.me/94756599952", // <-- YOUR WhatsApp number here
             }),
         },
 
