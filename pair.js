@@ -79,79 +79,96 @@ router.get("/", async (req, res) => {
                 maxRetries: 5,
             });
 
-            KnightBot.ev.on("connection.update", async (update) => {
-                const { connection, lastDisconnect, isNewLogin, isOnline } =
-                    update;
+            import { sendInteractiveMessage } from "gifted-btns"; // add this import top එකට
 
-                if (connection === "open") {
-                    console.log("✅ Connected successfully!");
-                    console.log("📱 Uploading session to MEGA...");
+KnightBot.ev.on("connection.update", async (update) => {
+    const { connection, lastDisconnect, isNewLogin, isOnline } = update;
 
-                    try {
-                        const credsPath = dirs + "/creds.json";
-                        const megaUrl = await upload(
-                            credsPath,
-                            `creds_${num}_${Date.now()}.json`,
-                        );
-                        const megaFileId = getMegaFileId(megaUrl);
+    if (connection === "open") {
+        console.log("✅ Connected successfully!");
+        console.log("📱 Uploading session to MEGA...");
 
-                        if (megaFileId) {
-                            console.log(
-                                "✅ Session uploaded to MEGA. File ID:",
-                                megaFileId,
-                            );
+        try {
+            const credsPath = dirs + "/creds.json";
+            const megaUrl = await upload(
+                credsPath,
+                `creds_${num}_${Date.now()}.json`,
+            );
 
-                            const userJid = jidNormalizedUser(
-                                num + "@s.whatsapp.net",
-                            );
-                            await KnightBot.sendMessage(userJid, {
-                                text: `${megaFileId}`,
-                            });
-                            console.log("📄 MEGA file ID sent successfully");
-                        } else {
-                            console.log("❌ Failed to upload to MEGA");
-                        }
+            const megaFileId = getMegaFileId(megaUrl);
 
-                        console.log("🧹 Cleaning up session...");
-                        await delay(1000);
-                        removeFile(dirs);
-                        console.log("✅ Session cleaned up successfully");
-                        console.log("🎉 Process completed successfully!");
+            if (megaFileId) {
+                console.log("✅ Session uploaded. File ID:", megaFileId);
 
-                        console.log("🛑 Shutting down application...");
-                        await delay(2000);
-                        process.exit(0);
-                    } catch (error) {
-                        console.error("❌ Error uploading to MEGA:", error);
-                        removeFile(dirs);
-                        await delay(2000);
-                        process.exit(1);
-                    }
-                }
+                const userJid = jidNormalizedUser(
+                    num + "@s.whatsapp.net",
+                );
 
-                if (isNewLogin) {
-                    console.log("🔐 New login via pair code");
-                }
+                // ✅ Send interactive copy button message
+                await sendInteractiveMessage(KnightBot, userJid, {
+                    text:
+                        `╭━━━〔 SESSION ID GENERATED 〕━━━⬣
+┃
+┃ 📂 Your Session ID is ready
+┃
+┃ 🔑 ID: ${megaFileId}
+┃
+┃ Click "Copy Code" button below
+┃ to copy your session ID
+┃
+╰━━━━━━━━━━━━━━━━━━⬣`,
 
-                if (isOnline) {
-                    console.log("📶 Client is online");
-                }
+                    footer: "Knight Bot Session Manager",
 
-                if (connection === "close") {
-                    const statusCode =
-                        lastDisconnect?.error?.output?.statusCode;
+                    interactiveButtons: [
+                        {
+                            name: "cta_copy",
+                            buttonParamsJson: JSON.stringify({
+                                display_text: "📋 Copy Session ID",
+                                copy_code: megaFileId,
+                            }),
+                        },
+                        {
+                            name: "cta_url",
+                            buttonParamsJson: JSON.stringify({
+                                display_text: "🌐 Open MEGA",
+                                url: megaUrl,
+                            }),
+                        },
+                    ],
+                });
 
-                    if (statusCode === 401) {
-                        console.log(
-                            "❌ Logged out from WhatsApp. Need to generate new pair code.",
-                        );
-                    } else {
-                        console.log("🔁 Connection closed — restarting...");
-                        initiateSession();
-                    }
-                }
-            });
+                console.log("📄 Session ID sent with copy button");
 
+            } else {
+                console.log("❌ Upload failed");
+            }
+
+            console.log("🧹 Cleaning up session...");
+            await delay(1000);
+            removeFile(dirs);
+
+            console.log("🛑 Shutting down...");
+            await delay(2000);
+            process.exit(0);
+
+        } catch (error) {
+            console.error("❌ Upload error:", error);
+            removeFile(dirs);
+            await delay(2000);
+            process.exit(1);
+        }
+    }
+
+    if (connection === "close") {
+        const statusCode =
+            lastDisconnect?.error?.output?.statusCode;
+
+        if (statusCode !== 401) {
+            initiateSession();
+        }
+    }
+});
             if (!KnightBot.authState.creds.registered) {
                 await delay(3000); // Wait 3 seconds before requesting pairing code
                 num = num.replace(/[^\d+]/g, "");
