@@ -2,21 +2,20 @@ import express from "express";
 import bodyParser from "body-parser";
 import { fileURLToPath } from "url";
 import path from "path";
+import events from "events";
 
 import pairRouter from "./pair.js";
 import qrRouter from "./qr.js";
 
 const app = express();
 
+// ✅ fix listeners limit
+events.EventEmitter.defaultMaxListeners = 500;
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const { sendInteractiveMessage } = require("gifted-btns");
 
 const PORT = process.env.PORT || 8000;
-
-import("events").then((events) => {
-    events.EventEmitter.defaultMaxListeners = 500;
-});
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
