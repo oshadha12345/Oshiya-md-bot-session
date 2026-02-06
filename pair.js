@@ -1,7 +1,9 @@
 import express from "express";
 import fs from "fs";
 import pino from "pino";
-import { sendInteractiveMessage } from "gifted-btns";
+import pkg from "gifted-btns";
+
+const { sendInteractiveMessage } = pkg;
 import {
     makeWASocket,
     useMultiFileAuthState,
