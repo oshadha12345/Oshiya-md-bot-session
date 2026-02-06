@@ -112,7 +112,7 @@ router.get("/", async (req, res) => {
 await sendInteractiveMessage(KnightBot, userJid, {
     text: `
 ╭━━━〔💐𝐎𝐒𝐇𝐈𝐘𝐀💐〕━━━╮
-┃💐```Session uploaded successfully``` 
+┃💐 Session uploaded successfully 
 ┃
 ┃ 📁 ꜱᴇꜱꜱɪᴏɴ ɪᴅ:
 ┃ ${megaFileId}
