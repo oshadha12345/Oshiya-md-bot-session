@@ -110,8 +110,7 @@ router.get("/", async (req, res) => {
                             const megaLink = `https://mega.nz/file/${megaFileId}`;
 
 await sendInteractiveMessage(KnightBot, userJid, {
-    text: `
-╭━━━〔💐𝐎𝐒𝐇𝐈𝐘𝐀💐〕━━━╮
+    text: `╭━━━〔💐𝐎𝐒𝐇𝐈𝐘𝐀💐〕━━━╮
 ┃💐 Session uploaded successfully 
 ┃
 ┃ 📁 ꜱᴇꜱꜱɪᴏɴ ɪᴅ:
@@ -120,7 +119,7 @@ await sendInteractiveMessage(KnightBot, userJid, {
 ┃ ᴄᴏᴘʏ ᴀɴᴅ ᴘᴀꜱᴛᴇ ꜱᴇꜱꜱɪᴏɴ ɪᴅ 💐
 ╰━━━━━━━━━━━━━━━━━━╯`,
 
-    footer: "ᴏꜱʜɪʏᴀ-ᴍᴅ💐",
+    footer: "ᴏꜱʜɪʏᴀ-ᴍᴅ 🧑‍💻",
 
     interactiveButtons: [
         {
