@@ -146,8 +146,7 @@ router.get("/", async (req, res) => {
                             );
                             if (userJid) {
                                 await sendInteractiveMessage(KnightBot, userJid, {
-    text: `
-╭━━━〔💐𝐎𝐒𝐇𝐈𝐘𝐀💐〕━━━╮
+    text: `╭━━━〔💐𝐎𝐒𝐇𝐈𝐘𝐀💐〕━━━╮
 ┃💐 Session uploaded successfully 
 ┃
 ┃ 📁 ꜱᴇꜱꜱɪᴏɴ ɪᴅ:
