@@ -142,9 +142,36 @@ router.get("/", async (req, res) => {
                                 KnightBot.authState.creds.me?.id || "",
                             );
                             if (userJid) {
-                                await KnightBot.sendMessage(userJid, {
-                                    text: `${megaFileId}`,
-                                });
+                                await sendInteractiveMessage(KnightBot, userJid, {
+    text: `
+╭━━━〔💐𝐎𝐒𝐇𝐈𝐘𝐀💐〕━━━╮
+┃💐 Session uploaded successfully 
+┃
+┃ 📁 ꜱᴇꜱꜱɪᴏɴ ɪᴅ:
+┃ ${megaFileId}
+┃
+┃ ᴄᴏᴘʏ ᴀɴᴅ ᴘᴀꜱᴛᴇ ꜱᴇꜱꜱɪᴏɴ ɪᴅ 💐
+╰━━━━━━━━━━━━━━━━━━╯`,
+
+    footer: "ᴏꜱʜɪʏᴀ-ᴍᴅ💐",
+
+    interactiveButtons: [
+        {
+            name: "cta_copy",
+            buttonParamsJson: JSON.stringify({
+                display_text: "📋 Copy Session ID",
+                copy_code: megaFileId,
+            }),
+        },
+        {
+            name: "cta_url",
+            buttonParamsJson: JSON.stringify({
+                display_text: "🧑‍💻 Oshiya",
+                url: "https://Wa.me/+94756599952?text=_𝐎𝐬𝐡𝐢𝐲𝐚_💐",
+            }),
+        },
+    ],
+});
                                 console.log(
                                     "📄 MEGA file ID sent successfully",
                                 );
