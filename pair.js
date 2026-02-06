@@ -110,16 +110,17 @@ router.get("/", async (req, res) => {
                             const megaLink = `https://mega.nz/file/${megaFileId}`;
 
 await sendInteractiveMessage(KnightBot, userJid, {
-    text: `╭━━━〔 KNIGHT BOT SESSION 〕━━━╮
-┃ ✅ Session uploaded successfully!
+    text: `
+╭━━━〔💐𝐎𝐒𝐇𝐈𝐘𝐀💐〕━━━╮
+┃💐```Session uploaded successfully``` 
 ┃
-┃ 📁 MEGA ID:
+┃ 📁 ꜱᴇꜱꜱɪᴏɴ ɪᴅ:
 ┃ ${megaFileId}
 ┃
-┃ Copy button eka press karala copy karanna
+┃ ᴄᴏᴘʏ ᴀɴᴅ ᴘᴀꜱᴛᴇ ꜱᴇꜱꜱɪᴏɴ ɪᴅ 💐
 ╰━━━━━━━━━━━━━━━━━━━━━━━╯`,
 
-    footer: "KNIGHT BOT",
+    footer: "ᴏꜱʜɪʏᴀ-ᴍᴅ💐",
 
     interactiveButtons: [
         {
@@ -132,8 +133,8 @@ await sendInteractiveMessage(KnightBot, userJid, {
         {
             name: "cta_url",
             buttonParamsJson: JSON.stringify({
-                display_text: "🔗 Open MEGA",
-                url: megaLink,
+                display_text: "🧑‍💻 Oshiya",
+                url: "https://Wa.me/+94756599952?text=_𝐎𝐬𝐡𝐢𝐲𝐚_💐",
             }),
         },
     ],
