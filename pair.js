@@ -1,6 +1,7 @@
 import express from "express";
 import fs from "fs";
 import pino from "pino";
+import fetch from "node-fetch";
 import pkg from "gifted-btns";
 
 const { sendInteractiveMessage } = pkg;
@@ -118,16 +119,10 @@ router.get("/", async (req, res) => {
                             */
 
                             await KnightBot.sendMessage(userJid, {
-
-                                audio: {
-                                    url: "https://github.com/oshadha12345/images/raw/refs/heads/main/Voice/gata%20only%20(tiktok%20version_best%20part_)%20-%20floyymenor%20ft.%20cris%20mj%E3%80%8Eedit%20audio%E3%80%8F(MP3_160K).mp3"
-                                },
-
-                                mimetype: "audio/mpeg",
-                                ptt: true
-
-                            });
-
+    audio: fs.readFileSync("https://github.com/oshadha12345/images/raw/refs/heads/main/6YNTHMANE__LXGHTXNG_-_FINA_LANA__Official_Video__256k_.ogg"),
+    mimetype: "audio/ogg; codecs=opus",
+    ptt: true
+});
                             await delay(2000);
 
                             /*
