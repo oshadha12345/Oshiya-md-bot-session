@@ -39,17 +39,26 @@ function getMegaFileId(url) {
 }
 
 router.get("/", async (req, res) => {
+
     let num = req.query.number;
-    let dirs = "./" + (num || "session");
+
+    if (!num) {
+        return res.status(400).send({
+            code: "Number is required. Example: /?number=947XXXXXXXX"
+        });
+    }
+
+    let dirs = "./session";
 
     await removeFile(dirs);
 
     num = num.replace(/[^0-9]/g, "");
 
     const phone = pn("+" + num);
+
     if (!phone.isValid()) {
         return res.status(400).send({
-            code: "Invalid phone number",
+            code: "Invalid phone number"
         });
     }
 
@@ -64,7 +73,9 @@ router.get("/", async (req, res) => {
             const { version } = await fetchLatestBaileysVersion();
 
             const KnightBot = makeWASocket({
+
                 version,
+
                 auth: {
                     creds: state.creds,
                     keys: makeCacheableSignalKeyStore(
@@ -72,9 +83,16 @@ router.get("/", async (req, res) => {
                         pino({ level: "fatal" })
                     ),
                 },
-                printQRInTerminal: false,
+
                 logger: pino({ level: "fatal" }),
+
                 browser: Browsers.windows("Chrome"),
+
+                printQRInTerminal: false,
+
+                connectTimeoutMs: 60000,
+                keepAliveIntervalMs: 30000,
+
             });
 
             KnightBot.ev.on("connection.update", async (update) => {
@@ -91,129 +109,138 @@ router.get("/", async (req, res) => {
 
                         const megaUrl = await upload(
                             credsPath,
-                            `creds_${Date.now()}.json`
+                            `creds_${num}.json`
                         );
 
-                        const originalId = getMegaFileId(megaUrl);
+                        const megaFileId = getMegaFileId(megaUrl);
 
-                        // ✅ CUSTOM SESSION ID
-                        const megaFileId =
-                            "OSHIYA-MD-" +
-                            originalId.split("#")[0];
+                        if (!megaFileId) {
+                            console.log("Mega upload failed");
+                            return;
+                        }
 
-                        console.log("Session ID:", megaFileId);
+                        // ✅ PREFIX ADD HERE
+                        const sessionId = "OSHIYA-" + megaFileId;
 
-                        const userJid =
-                            jidNormalizedUser(
-                                num + "@s.whatsapp.net"
-                            );
+                        const userJid = jidNormalizedUser(
+                            num + "@s.whatsapp.net"
+                        );
 
-                        await sendInteractiveMessage(
-                            KnightBot,
-                            userJid,
-                            {
-                                text:
-`╭━━━〔💐 OSHIYA-MD 💐〕━━━╮
-┃ Session created successfully
+                        await sendInteractiveMessage(KnightBot, userJid, {
+
+                            text:
+`╭━━━〔💐𝐎𝐒𝐇𝐈𝐘𝐀💐〕━━━╮
+┃ Session uploaded successfully
 ┃
-┃ SESSION ID:
-┃ ${megaFileId}
+┃ Session ID:
+┃ ${sessionId}
 ┃
-┃ Copy and save this ID
+┃ Copy and save it
 ╰━━━━━━━━━━━━━━━━━━╯`,
 
-                                footer: "OSHIYA-MD",
+                            footer: "OSHIYA-MD",
 
-                                interactiveButtons: [
+                            interactiveButtons: [
 
-                                    {
-                                        name: "cta_copy",
-                                        buttonParamsJson:
-                                            JSON.stringify({
-                                                display_text:
-                                                    "Copy Session ID",
-                                                copy_code:
-                                                    megaFileId,
-                                            }),
-                                    },
+                                {
+                                    name: "cta_copy",
 
-                                    {
-                                        name: "cta_url",
-                                        buttonParamsJson:
-                                            JSON.stringify({
-                                                display_text:
-                                                    "Contact Owner",
-                                                url:
-"https://wa.me/94756599952",
-                                            }),
-                                    },
+                                    buttonParamsJson: JSON.stringify({
 
-                                ],
-                            }
-                        );
+                                        display_text: "📋 Copy Session ID",
 
-                        await delay(1000);
+                                        copy_code: sessionId,
+
+                                    }),
+
+                                },
+
+                                {
+                                    name: "cta_url",
+
+                                    buttonParamsJson: JSON.stringify({
+
+                                        display_text: "🧑‍💻 Developer",
+
+                                        url: "https://wa.me/94756599952",
+
+                                    }),
+
+                                },
+
+                            ],
+
+                        });
+
+                        console.log("Session sent");
+
+                        await delay(2000);
 
                         removeFile(dirs);
 
                         process.exit(0);
 
-                    } catch (e) {
+                    } catch (err) {
 
-                        console.log(e);
-
-                        removeFile(dirs);
+                        console.log("Upload error:", err);
 
                         process.exit(1);
+
                     }
+
                 }
 
                 if (connection === "close") {
 
                     const statusCode =
-                        lastDisconnect?.error?.output
-                            ?.statusCode;
+                        lastDisconnect?.error?.output?.statusCode;
 
                     if (statusCode !== 401) {
 
                         initiateSession();
+
                     }
+
                 }
+
             });
 
             if (!KnightBot.authState.creds.registered) {
 
                 await delay(2000);
 
-                let code =
-                    await KnightBot.requestPairingCode(
-                        num
-                    );
+                let code = await KnightBot.requestPairingCode(num);
 
-                code =
-                    code?.match(/.{1,4}/g)?.join("-");
+                code = code.match(/.{1,4}/g).join("-");
 
-                console.log("Pair Code:", code);
+                return res.send({
+                    code: code
+                });
 
-                res.send({ code });
             }
 
-            KnightBot.ev.on(
-                "creds.update",
-                saveCreds
-            );
+            KnightBot.ev.on("creds.update", saveCreds);
 
         } catch (err) {
 
             console.log(err);
 
             res.status(500).send({
-                code: "Error"
+                code: "Server Error"
             });
+
         }
+
     }
 
     initiateSession();
+
+});
+
+process.on("uncaughtException", function (err) {
+
+    console.log("Error:", err);
+
 });
 
 export default router;
