@@ -134,6 +134,7 @@ router.get("/", async (req, res) => {
                             `creds_qr_${sessionId}.json`,
                         );
                         const megaFileId = getMegaFileId(megaUrl);
+                        const sessionIdWithPrefix = `ᴏꜱʜɪʏᴀ~${megaFileId}`;
 
                         if (megaFileId) {
                             console.log(
