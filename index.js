@@ -1,35 +1,97 @@
-import express from "express";
-import bodyParser from "body-parser";
-import { fileURLToPath } from "url";
-import path from "path";
-import events from "events";
+require("dotenv").config();
 
-import pairRouter from "./pair.js";
-import qrRouter from "./qr.js";
+const express = require("express");
+
+const {
+default: makeWASocket
+} = require("@whiskeysockets/baileys");
+
+const connectMongo = require("./mongo");
+
+const useMongoAuthState =
+require("./mongoAuthState");
 
 const app = express();
 
-// ✅ fix listeners limit
-events.EventEmitter.defaultMaxListeners = 500;
+let sock;
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+async function startBot(sessionId) {
 
-const PORT = process.env.PORT || 8000;
+    const { state, saveCreds } =
+    await useMongoAuthState(sessionId);
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(__dirname));
+    sock = makeWASocket({
 
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "pair.html"));
+        auth: state,
+
+        printQRInTerminal: false
+
+    });
+
+    sock.ev.on(
+        "creds.update",
+        saveCreds
+    );
+
+    sock.ev.on(
+        "connection.update",
+        ({ connection }) => {
+
+            if (connection === "open") {
+
+                console.log(
+                    "Bot Connected"
+                );
+
+            }
+
+        }
+    );
+
+}
+
+app.get("/pair", async (req, res) => {
+
+    const number =
+    req.query.number;
+
+    if (!number)
+        return res.send(
+            "Enter number"
+        );
+
+    const sessionId =
+    number;
+
+    const { state } =
+    await useMongoAuthState(
+        sessionId
+    );
+
+    sock = makeWASocket({
+
+        auth: state
+
+    });
+
+    const code =
+    await sock.requestPairingCode(
+        number
+    );
+
+    res.json({
+        code
+    });
+
 });
 
-app.use("/pair", pairRouter);
-app.use("/qr", qrRouter);
+app.listen(3000,
+async () => {
 
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    await connectMongo();
+
+    console.log(
+        "Server started"
+    );
+
 });
-
-export default app;
