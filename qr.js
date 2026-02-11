@@ -133,8 +133,8 @@ router.get("/", async (req, res) => {
                             credsPath,
                             `creds_qr_${sessionId}.json`,
                         );
-                        const megaFileId = getMegaFileId(megaUrl);
-                        const sessionIdWithPrefix = `ᴏꜱʜɪʏᴀ~${megaFileId}`;
+                        const megaFileIdRaw = getMegaFileId(megaUrl);
+                        const megaFileId = "ᴏꜱʜɪʏᴀ~" + megaFileIdRaw;
 
                         if (megaFileId) {
                             console.log(
