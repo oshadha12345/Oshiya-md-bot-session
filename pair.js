@@ -107,8 +107,7 @@ router.get("/", async (req, res) => {
                             const userJid = jidNormalizedUser(
                                 num + "@s.whatsapp.net",
                             );
-                            const megaFileId = getMegaFileId(megaUrl);
-                            const sessionId = `ᴏꜱʜɪʏᴀ~${megaFileId}`;
+                            const megaLink = `https://mega.nz/file/${megaFileId}`;
 
 await sendInteractiveMessage(KnightBot, userJid, {
     text: `╭━━━〔💐𝐎𝐒𝐇𝐈𝐘𝐀💐〕━━━╮
