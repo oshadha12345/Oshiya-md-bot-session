@@ -1,68 +1,26 @@
-import express from "express";
-import bodyParser from "body-parser";
-import { fileURLToPath } from "url";
-import path from "path";
-import events from "events";
+const { default: makeWASocket } = require("@whiskeysockets/baileys");
+const { connectMongo, getSession, saveSession } = require("./lib/mongo");
 
-import pairRouter from "./pair.js";
-import qrRouter from "./qr.js";
-const { MongoClient } = require("mongodb");
+(async () => {
+    // Connect to MongoDB
+    await connectMongo();
 
-const mongoUrl = "mongodb+srv://oshadhaoshadha12345_db_user:SH0m8ksHl8A0ZfBF@oshiya.bc9b5e4.mongodb.net/?appName=Oshiya";
+    // Load session from MongoDB
+    const authState = await getSession();
 
-const client = new MongoClient(mongoUrl);
+    // Create WhatsApp socket
+    const sock = makeWASocket({
+        auth: authState,
+        printQRInTerminal: true
+    });
 
-let collection;
+    // Auto-save creds to MongoDB on update
+    sock.ev.on("creds.update", () => saveSession(authState));
 
-async function connectMongo() {
-    await client.connect();
-    const db = client.db("oshiya_session");
-    collection = db.collection("session");
-    console.log("✅ MongoDB Connected");
-}
+    // Listen for messages
+    sock.ev.on("messages.upsert", m => {
+        console.log("New message:", m.messages[0].message?.conversation || m);
+    });
 
-async function useMongoAuth() {
-    const data = await collection.findOne({ _id: "auth" });
-
-    let state = data?.data || {
-        creds: {},
-        keys: {}
-    };
-
-    const saveCreds = async () => {
-        await collection.updateOne(
-            { _id: "auth" },
-            { $set: { data: state } },
-            { upsert: true }
-        );
-    };
-
-    return { state, saveCreds };
-}
-
-const app = express();
-
-// ✅ fix listeners limit
-events.EventEmitter.defaultMaxListeners = 500;
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const PORT = process.env.PORT || 8000;
-
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(__dirname));
-
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "pair.html"));
-});
-
-app.use("/pair", pairRouter);
-app.use("/qr", qrRouter);
-
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-});
-
-export default app;
+    console.log("✅ Bot running with MongoDB auth!");
+})();
