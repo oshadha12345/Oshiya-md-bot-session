@@ -21,6 +21,25 @@ async function connectMongo() {
     console.log("✅ MongoDB Connected");
 }
 
+async function useMongoAuth() {
+    const data = await collection.findOne({ _id: "auth" });
+
+    let state = data?.data || {
+        creds: {},
+        keys: {}
+    };
+
+    const saveCreds = async () => {
+        await collection.updateOne(
+            { _id: "auth" },
+            { $set: { data: state } },
+            { upsert: true }
+        );
+    };
+
+    return { state, saveCreds };
+}
+
 const app = express();
 
 // ✅ fix listeners limit
