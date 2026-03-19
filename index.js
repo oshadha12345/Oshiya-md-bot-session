@@ -1,26 +1,35 @@
-const { default: makeWASocket } = require("@whiskeysockets/baileys");
-const { connectMongo, getSession, saveSession } = require("./lib/mongo");
+import express from "express";
+import bodyParser from "body-parser";
+import { fileURLToPath } from "url";
+import path from "path";
+import events from "events";
 
-(async () => {
-    // Connect to MongoDB
-    await connectMongo();
+import pairRouter from "./pair.js";
+import qrRouter from "./qr.js";
 
-    // Load session from MongoDB
-    const authState = await getSession();
+const app = express();
 
-    // Create WhatsApp socket
-    const sock = makeWASocket({
-        auth: authState,
-        printQRInTerminal: true
-    });
+// ✅ fix listeners limit
+events.EventEmitter.defaultMaxListeners = 500;
 
-    // Auto-save creds to MongoDB on update
-    sock.ev.on("creds.update", () => saveSession(authState));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-    // Listen for messages
-    sock.ev.on("messages.upsert", m => {
-        console.log("New message:", m.messages[0].message?.conversation || m);
-    });
+const PORT = process.env.PORT || 8000;
 
-    console.log("✅ Bot running with MongoDB auth!");
-})();
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static(__dirname));
+
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "pair.html"));
+});
+
+app.use("/pair", pairRouter);
+app.use("/qr", qrRouter);
+
+app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+});
+
+export default app;
