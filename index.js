@@ -2,7 +2,7 @@ const { default: makeWASocket, useMultiFileAuthState, fetchLatestBaileysVersion 
 const mongoose = require('mongoose');
 
 // MongoDB Connection String eka methana danna
-const mongoURI = "OYAGE_MONGODB_URL_EKA_METHANA_DANNA";
+const mongoURI = "mongodb+srv://oshadhaoshadha12345_db_user:SH0m8ksHl8A0ZfBF@oshiya.bc9b5e4.mongodb.net/?appName=Oshiya";
 
 // Session eka save karanna hadana Schema eka
 const SessionSchema = new mongoose.Schema({
