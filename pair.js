@@ -1,6 +1,7 @@
 import express from "express";
 import fs from "fs";
 import pino from "pino";
+import mongoose from "mongoose"; // MongoDB connect kirima sandaha
 
 import {
     makeWASocket,
@@ -12,9 +13,23 @@ import {
     fetchLatestBaileysVersion,
 } from "@whiskeysockets/baileys";
 import pn from "awesome-phonenumber";
-import { upload } from "./mega.js";
 
 const router = express.Router();
+
+// --- MONGODB CONFIGURATION ---
+// Oyage MongoDB Connection String eka methana danna
+const MONGO_URI = process.env.MONGODB_URI || "OYAGE_MONGODB_URL_METHANA_DANNA";
+
+const SessionSchema = new mongoose.Schema({
+    sessionId: String,
+    creds: Object,
+    date: { type: Date, default: Date.now }
+});
+
+const SessionModel = mongoose.models.Session || mongoose.model("Session", SessionSchema);
+
+// MongoDB Connect kirima
+mongoose.connect(MONGO_URI).then(() => console.log("Connected to MongoDB ✅")).catch(err => console.error("MongoDB Connection Error:", err));
 
 function removeFile(FilePath) {
     try {
@@ -25,15 +40,6 @@ function removeFile(FilePath) {
     }
 }
 
-function getMegaFileId(url) {
-    try {
-        const match = url.match(/\/file\/([^#]+#[^\/]+)/);
-        return match ? match[1] : null;
-    } catch (error) {
-        return null;
-    }
-}
-
 router.get("/", async (req, res) => {
     let num = req.query.number;
     let dirs = "./" + (num || `session`);
@@ -41,13 +47,10 @@ router.get("/", async (req, res) => {
     await removeFile(dirs);
 
     num = num.replace(/[^0-9]/g, "");
-
     const phone = pn("+" + num);
     if (!phone.isValid()) {
         if (!res.headersSent) {
-            return res.status(400).send({
-                code: "Invalid phone number.",
-            });
+            return res.status(400).send({ code: "Invalid phone number." });
         }
         return;
     }
@@ -78,38 +81,35 @@ router.get("/", async (req, res) => {
 
                 if (connection === "open") {
                     console.log("✅ Connected successfully!");
-                    
+
                     try {
-                        const credsPath = dirs + "/creds.json";
-                        const megaUrl = await upload(
-                            credsPath,
-                            `creds_${num}_${Date.now()}.json`,
-                        );
-                        const megaFileIdRaw = getMegaFileId(megaUrl);
-                        const megaFileId = "ᴏꜱʜɪʏᴀ~" + megaFileIdRaw;
+                        // Mega upload eka venuvata MongoDB walata save kirima
+                        const sessionID = "ᴏꜱʜɪʏᴀ~" + Math.random().toString(36).substring(2, 12).toUpperCase();
+                        
+                        await SessionModel.create({
+                            sessionId: sessionID,
+                            creds: state.creds // creds.json eke data kelinma DB yanawa
+                        });
 
-                        if (megaFileId) {
-                            console.log("✅ Session uploaded to MEGA. ID:", megaFileId);
+                        console.log("✅ Session saved to MongoDB. ID:", sessionID);
 
-                            const userJid = jidNormalizedUser(num + "@s.whatsapp.net");
+                        const userJid = jidNormalizedUser(num + "@s.whatsapp.net");
 
-                            // බොත්තම් සහ Session ID එක යැවීම වෙනුවට සරල text එකක් පමණක් යවයි
-                            await KnightBot.sendMessage(userJid, { 
-                                text: "Connecting 🔌" 
-                            });
+                        // WhatsApp ekata session ID eka yavuva
+                        await KnightBot.sendMessage(userJid, {
+                            text: `*Successfully Connected!* ⚡\n\n*Session ID:* ${sessionID}\n\nDon't share your session ID with anyone!`
+                        });
 
-                            console.log("📄 Simple message sent to WhatsApp");
-                        }
+                        console.log("📄 Session ID sent to WhatsApp");
 
                         console.log("🧹 Cleaning up...");
-                        await delay(1000);
-                        removeFile(dirs);
                         await delay(2000);
-                        process.exit(0);
-                    } catch (error) {
-                        console.error("❌ Error:", error);
                         removeFile(dirs);
-                        process.exit(1);
+                        // Meeka API ekak nisa exit wenna ona na, eth oyaage code eke thibba nisa mama damma
+                        // process.exit(0); 
+                    } catch (error) {
+                        console.error("❌ MongoDB Save Error:", error);
+                        removeFile(dirs);
                     }
                 }
 
