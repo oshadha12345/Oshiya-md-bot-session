@@ -1,35 +1,42 @@
-import express from "express";
-import bodyParser from "body-parser";
-import { fileURLToPath } from "url";
-import path from "path";
-import events from "events";
+const { default: makeWASocket, useMultiFileAuthState, fetchLatestBaileysVersion } = require("@whiskeysockets/baileys");
+const mongoose = require('mongoose');
 
-import pairRouter from "./pair.js";
-import qrRouter from "./qr.js";
+// MongoDB Connection String eka methana danna
+const mongoURI = "OYAGE_MONGODB_URL_EKA_METHANA_DANNA";
 
-const app = express();
-
-// ✅ fix listeners limit
-events.EventEmitter.defaultMaxListeners = 500;
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const PORT = process.env.PORT || 8000;
-
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(__dirname));
-
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "pair.html"));
+// Session eka save karanna hadana Schema eka
+const SessionSchema = new mongoose.Schema({
+    id: { type: String, required: true, unique: true },
+    data: { type: String, required: true }
 });
+const Session = mongoose.model('Session', SessionSchema);
 
-app.use("/pair", pairRouter);
-app.use("/qr", qrRouter);
+async function startBot() {
+    await mongoose.connect(mongoURI);
+    console.log("Connected to MongoDB!");
 
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-});
+    // --- Custom MongoDB Auth Strategy ---
+    // Meeka hadanne kelinma database ekata save wenna
+    const { state, saveCreds } = await useMultiFileAuthState('./session'); 
+    // Note: MultiFileAuthState use karala folder ekata save wenna hadala, 
+    // eka database ekata sync karanna puluwan. 
 
-export default app;
+    const sock = makeWASocket({
+        auth: state,
+        printQRInTerminal: true,
+        browser: ["Oshiya-MD", "Safari", "3.0.0"]
+    });
+
+    sock.ev.on('creds.update', saveCreds);
+
+    sock.ev.on('connection.update', (update) => {
+        const { connection, lastDisconnect } = update;
+        if (connection === 'close') {
+            startBot(); // Reconnect
+        } else if (connection === 'open') {
+            console.log('WhatsApp Connected successfully!');
+        }
+    });
+}
+
+startBot();
