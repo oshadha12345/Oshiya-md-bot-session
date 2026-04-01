@@ -2,6 +2,7 @@ import express from "express";
 import fs from "fs";
 import pino from "pino";
 import pkg from "gifted-btns";
+import mongoose from "mongoose"; // MongoDB sandaha
 
 const { sendInteractiveMessage } = pkg;
 import {
@@ -14,9 +15,24 @@ import {
     fetchLatestBaileysVersion,
 } from "@whiskeysockets/baileys";
 import QRCode from "qrcode";
-import { upload } from "./mega.js";
 
 const router = express.Router();
+
+// --- MONGODB CONFIGURATION ---
+const MONGO_URI = process.env.MONGODB_URI || "OYAGE_MONGODB_URL_METHANA_DANNA";
+
+const SessionSchema = new mongoose.Schema({
+    sessionId: String,
+    creds: Object,
+    date: { type: Date, default: Date.now }
+});
+
+const SessionModel = mongoose.models.Session || mongoose.model("Session", SessionSchema);
+
+// MongoDB Connect kirima
+mongoose.connect(MONGO_URI)
+    .then(() => console.log("Connected to MongoDB ✅"))
+    .catch(err => console.error("MongoDB Connection Error:", err));
 
 function removeFile(FilePath) {
     try {
@@ -27,19 +43,9 @@ function removeFile(FilePath) {
     }
 }
 
-function getMegaFileId(url) {
-    try {
-        const match = url.match(/\/file\/([^#]+#[^\/]+)/);
-        return match ? match[1] : null;
-    } catch (error) {
-        return null;
-    }
-}
-
 router.get("/", async (req, res) => {
-    const sessionId =
-        Date.now().toString() + Math.random().toString(36).substr(2, 9);
-    const dirs = `./qr_sessions/session_${sessionId}`;
+    const sessionIdRaw = Date.now().toString() + Math.random().toString(36).substr(2, 5);
+    const dirs = `./qr_sessions/session_${sessionIdRaw}`;
 
     if (!fs.existsSync("./qr_sessions")) {
         fs.mkdirSync("./qr_sessions", { recursive: true });
@@ -51,8 +57,7 @@ router.get("/", async (req, res) => {
         const { state, saveCreds } = await useMultiFileAuthState(dirs);
 
         try {
-            const { version, isLatest } = await fetchLatestBaileysVersion();
-
+            const { version } = await fetchLatestBaileysVersion();
             let responseSent = false;
 
             const KnightBot = makeWASocket({
@@ -68,158 +73,82 @@ router.get("/", async (req, res) => {
                 logger: pino({ level: "fatal" }).child({ level: "fatal" }),
                 browser: Browsers.windows("Chrome"),
                 markOnlineOnConnect: false,
-                generateHighQualityLinkPreview: false,
-                defaultQueryTimeoutMs: 60000,
-                connectTimeoutMs: 60000,
-                keepAliveIntervalMs: 30000,
-                retryRequestDelayMs: 250,
-                maxRetries: 5,
             });
 
             KnightBot.ev.on("connection.update", async (update) => {
-                const { connection, lastDisconnect, isNewLogin, isOnline, qr } =
-                    update;
+                const { connection, lastDisconnect, qr } = update;
 
+                // QR Code eka client ta yawima
                 if (qr && !responseSent) {
-                    console.log(
-                        "🟢 QR Code Generated! Scan it with your WhatsApp app.",
-                    );
-
                     try {
-                        const qrDataURL = await QRCode.toDataURL(qr, {
-                            errorCorrectionLevel: "M",
-                            type: "image/png",
-                            quality: 0.92,
-                            margin: 1,
-                            color: {
-                                dark: "#000000",
-                                light: "#FFFFFF",
-                            },
-                        });
-
+                        const qrDataURL = await QRCode.toDataURL(qr);
                         if (!responseSent) {
                             responseSent = true;
-                            console.log("QR Code sent to client");
                             res.send({
                                 qr: qrDataURL,
-                                message:
-                                    "QR Code Generated! Scan it with your WhatsApp app.",
-                                instructions: [
-                                    "1. Open WhatsApp on your phone",
-                                    "2. Go to Settings > Linked Devices",
-                                    '3. Tap "Link a Device"',
-                                    "4. Scan the QR code above",
-                                ],
+                                message: "Scan this QR code with WhatsApp",
                             });
                         }
                     } catch (qrError) {
-                        console.error("Error generating QR code:", qrError);
-                        if (!responseSent) {
-                            responseSent = true;
-                            res.status(500).send({
-                                code: "Failed to generate QR code",
-                            });
-                        }
+                        console.error("QR Error:", qrError);
                     }
                 }
 
                 if (connection === "open") {
                     console.log("✅ Connected successfully!");
-                    console.log("📱 Uploading session to MEGA...");
 
                     try {
-                        const credsPath = dirs + "/creds.json";
-                        const megaUrl = await upload(
-                            credsPath,
-                            `creds_qr_${sessionId}.json`,
-                        );
-                        const megaFileIdRaw = getMegaFileId(megaUrl);
-                        const megaFileId = "ᴏꜱʜɪʏᴀ~" + megaFileIdRaw;
+                        // Unique Session ID ekak hadamu
+                        const finalSessionId = "ᴏꜱʜɪʏᴀ~" + Math.random().toString(36).substring(2, 12).toUpperCase();
 
-                        if (megaFileId) {
-                            console.log(
-                                "✅ Session uploaded to MEGA. File ID:",
-                                megaFileId,
-                            );
+                        // MongoDB walata save kirima (Mega venuvata)
+                        await SessionModel.create({
+                            sessionId: finalSessionId,
+                            creds: state.creds
+                        });
 
-                            const userJid = jidNormalizedUser(
-                                KnightBot.authState.creds.me?.id || "",
-                            );
-                            if (userJid) {
-                                await sendInteractiveMessage(KnightBot, userJid, {
-    text: `╭━━━〔💐𝐎𝐒𝐇𝐈𝐘𝐀💐〕━━━╮
-┃💐 Session uploaded successfully 
-┃
-┃ 📁 ꜱᴇꜱꜱɪᴏɴ ɪᴅ:
-┃ ${megaFileId}
-┃
-┃ ᴄᴏᴘʏ ᴀɴᴅ ᴘᴀꜱᴛᴇ ꜱᴇꜱꜱɪᴏɴ ɪᴅ 💐
-╰━━━━━━━━━━━━━━━━━━╯`,
+                        console.log("✅ Session saved to MongoDB:", finalSessionId);
 
-    footer: "ᴏꜱʜɪʏᴀ-ᴍᴅ💐",
-
-    interactiveButtons: [
-        {
-            name: "cta_copy",
-            buttonParamsJson: JSON.stringify({
-                display_text: "📋 Copy Session ID",
-                copy_code: megaFileId,
-            }),
-        },
-        {
-            name: "cta_url",
-            buttonParamsJson: JSON.stringify({
-                display_text: "🧑‍💻 Oshiya",
-                url: "https://Wa.me/+94756599952?text=_𝐎𝐬𝐡𝐢𝐲𝐚_💐",
-            }),
-        },
-    ],
-});
-                                console.log(
-                                    "📄 MEGA file ID sent successfully",
-                                );
-                            } else {
-                                console.log("❌ Could not determine user JID");
-                            }
-                        } else {
-                            console.log("❌ Failed to upload to MEGA");
+                        const userJid = jidNormalizedUser(KnightBot.authState.creds.me?.id || "");
+                        
+                        if (userJid) {
+                            // WhatsApp ekata Copy Button ekath ekka ID eka yawima
+                            await sendInteractiveMessage(KnightBot, userJid, {
+                                text: `╭━━━〔💐𝐎𝐒𝐇𝐈𝐘𝐀💐〕━━━╮\n┃💐 Session Connected Successfully\n┃\n┃ 📁 ꜱᴇꜱꜱɪᴏɴ ɪᴅ:\n┃ ${finalSessionId}\n┃\n┃ ᴄᴏᴘʏ ᴀɴᴅ ᴘᴀꜱᴛᴇ ꜱᴇꜱꜱɪᴏɴ ɪᴅ 💐\n╰━━━━━━━━━━━━━━━━━━╯`,
+                                footer: "ᴏꜱʜɪʏᴀ-ᴍᴅ💐",
+                                interactiveButtons: [
+                                    {
+                                        name: "cta_copy",
+                                        buttonParamsJson: JSON.stringify({
+                                            display_text: "📋 Copy Session ID",
+                                            copy_code: finalSessionId,
+                                        }),
+                                    },
+                                    {
+                                        name: "cta_url",
+                                        buttonParamsJson: JSON.stringify({
+                                            display_text: "🧑‍💻 Support",
+                                            url: "https://Wa.me/+94756599952",
+                                        }),
+                                    },
+                                ],
+                            });
                         }
 
-                        console.log("🧹 Cleaning up session...");
-                        await delay(1000);
-                        removeFile(dirs);
-                        console.log("✅ Session cleaned up successfully");
-                        console.log("🎉 Process completed successfully!");
-
-                        console.log("🛑 Shutting down application...");
+                        console.log("🧹 Cleaning up...");
                         await delay(2000);
+                        removeFile(dirs);
                         process.exit(0);
                     } catch (error) {
-                        console.error("❌ Error uploading to MEGA:", error);
+                        console.error("❌ Error during finalization:", error);
                         removeFile(dirs);
-                        await delay(2000);
                         process.exit(1);
                     }
                 }
 
-                if (isNewLogin) {
-                    console.log("🔐 New login via QR code");
-                }
-
-                if (isOnline) {
-                    console.log("📶 Client is online");
-                }
-
                 if (connection === "close") {
-                    const statusCode =
-                        lastDisconnect?.error?.output?.statusCode;
-
-                    if (statusCode === 401) {
-                        console.log(
-                            "❌ Logged out from WhatsApp. Need to generate new QR code.",
-                        );
-                    } else {
-                        console.log("🔁 Connection closed — restarting...");
+                    const statusCode = lastDisconnect?.error?.output?.statusCode;
+                    if (statusCode !== 401) {
                         initiateSession();
                     }
                 }
@@ -227,44 +156,23 @@ router.get("/", async (req, res) => {
 
             KnightBot.ev.on("creds.update", saveCreds);
 
+            // Timeout handle kirima
             setTimeout(() => {
                 if (!responseSent) {
                     responseSent = true;
                     res.status(408).send({ code: "QR generation timeout" });
                     removeFile(dirs);
-                    setTimeout(() => process.exit(1), 2000);
                 }
-            }, 30000);
+            }, 45000);
+
         } catch (err) {
-            console.error("Error initializing session:", err);
-            if (!res.headersSent) {
-                res.status(503).send({ code: "Service Unavailable" });
-            }
+            console.error("Init Error:", err);
+            if (!res.headersSent) res.status(500).send({ code: "Internal Error" });
             removeFile(dirs);
-            setTimeout(() => process.exit(1), 2000);
         }
     }
 
     await initiateSession();
-});
-
-process.on("uncaughtException", (err) => {
-    let e = String(err);
-    if (e.includes("conflict")) return;
-    if (e.includes("not-authorized")) return;
-    if (e.includes("Socket connection timeout")) return;
-    if (e.includes("rate-overlimit")) return;
-    if (e.includes("Connection Closed")) return;
-    if (e.includes("Timed Out")) return;
-    if (e.includes("Value not found")) return;
-    if (
-        e.includes("Stream Errored") ||
-        e.includes("Stream Errored (restart required)")
-    )
-        return;
-    if (e.includes("statusCode: 515") || e.includes("statusCode: 503")) return;
-    console.log("Caught exception: ", err);
-    process.exit(1);
 });
 
 export default router;
