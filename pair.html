@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OSHIYA-MD | PREMIUM SESSION</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>OSHIYA-MD | PREMIUM HUB</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
@@ -12,291 +12,253 @@
   --primary-glow: #00d2ff;
   --secondary-glow: #3a7bd5;
   --bg-dark: #0a0a0c;
-  --glass: rgba(255, 255, 255, 0.05);
+  --glass: rgba(255, 255, 255, 0.08);
+  --accent: #ff00cc;
+  --neon-blue: #00f2ff;
+  --wa-green: #25d366;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; scroll-behavior: smooth; }
 
 body {
   font-family: 'Poppins', sans-serif;
   background: var(--bg-dark);
   color: #fff;
   min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   overflow-x: hidden;
 }
 
-/* --- PREMIUM PRELOADER --- */
-#preloader {
-  position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: #000;
+/* --- PRELOADER --- */
+#preloader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; transition: 0.8s; }
+.loader-logo { font-family: 'Orbitron', sans-serif; font-size: 2rem; color: #fff; margin-bottom: 20px; letter-spacing: 8px; animation: pulse 2s infinite; }
+.loader-bar { width: 200px; height: 2px; background: #222; overflow: hidden; }
+.loader-progress { width: 0%; height: 100%; background: var(--accent); animation: loadProgress 1.5s forwards ease-in-out; }
+@keyframes loadProgress { 100% { width: 100%; } }
+@keyframes pulse { 0%, 100% { opacity: 1; text-shadow: 0 0 20px var(--accent); } 50% { opacity: 0.3; } }
+
+.bg-animate { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 50%, #111 0%, #000 100%); z-index: -1; }
+
+/* --- WELCOME SELECTION --- */
+.welcome-screen {
+  height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  z-index: 9999;
-  transition: opacity 0.8s ease;
-}
-.loader-logo {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 2rem;
-  color: #fff;
-  margin-bottom: 20px;
-  letter-spacing: 5px;
-  animation: pulse 2s infinite;
-}
-.loader-bar {
-  width: 200px;
-  height: 2px;
-  background: #222;
-  border-radius: 10px;
-  overflow: hidden;
-}
-.loader-progress {
-  width: 0%;
-  height: 100%;
-  background: linear-gradient(90deg, #ff00cc, #3333ff);
-  animation: loadProgress 2s forwards ease-in-out;
-}
-@keyframes loadProgress { 100% { width: 100%; } }
-@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-
-/* --- BACKGROUND ANIMATION --- */
-.bg-animate {
-  position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #000 100%);
-  z-index: -1;
-}
-
-/* --- MAIN CONTAINER --- */
-.container {
-  width: 90%;
-  max-width: 450px;
-  background: var(--glass);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 30px;
-  padding: 40px 30px;
-  box-shadow: 0 25px 50px rgba(0,0,0,0.5);
   text-align: center;
+  padding: 20px;
 }
 
-.profile-area {
-  position: relative;
-  width: 120px;
-  height: 120px;
-  margin: 0 auto 20px;
+.welcome-title { font-family: 'Orbitron', sans-serif; font-size: 28px; margin-bottom: 10px; color: var(--neon-blue); text-shadow: 0 0 15px rgba(0,242,255,0.5); }
+.welcome-sub { font-size: 12px; color: #888; margin-bottom: 40px; letter-spacing: 3px; }
+
+.select-container { display: flex; gap: 20px; width: 100%; max-width: 500px; flex-wrap: wrap; justify-content: center; }
+
+.bot-card {
+  flex: 1; min-width: 160px; background: var(--glass); padding: 30px 20px; border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.4s;
+  position: relative; overflow: hidden;
 }
-.profile-area img {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  border: 3px solid #fff;
-  object-fit: cover;
-  padding: 5px;
+.bot-card:hover { transform: translateY(-10px); border-color: var(--accent); background: rgba(255,255,255,0.12); }
+.bot-card i { font-size: 40px; margin-bottom: 15px; display: block; color: var(--primary-glow); }
+.bot-card h3 { font-family: 'Orbitron', sans-serif; font-size: 16px; margin-bottom: 8px; }
+.bot-card p { font-size: 10px; color: #aaa; }
+
+/* --- SESSION BOX --- */
+.container {
+  width: 92%; max-width: 420px; background: var(--glass); backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; padding: 40px 25px;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.8); text-align: center; margin: 50px auto;
+  display: none; animation: slideUp 0.8s ease;
 }
-.profile-area::after {
-  content: '';
-  position: absolute;
-  top: -5px; left: -5px; right: -5px; bottom: -5px;
-  border-radius: 50%;
-  border: 2px dashed #00d2ff;
-  animation: rotate 10s linear infinite;
-}
+
+@keyframes slideUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
+
+.profile-area { position: relative; width: 110px; height: 110px; margin: 0 auto 20px; }
+.profile-area img { width: 100%; height: 100%; border-radius: 50%; border: 3px solid #fff; padding: 4px; object-fit: cover; }
+.profile-area::after { content: ''; position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px; border-radius: 50%; border: 2px dashed var(--accent); animation: rotate 15s linear infinite; }
 @keyframes rotate { 100% { transform: rotate(360deg); } }
 
-.title { font-family: 'Orbitron', sans-serif; font-size: 26px; margin-bottom: 5px; background: linear-gradient(90deg, #fff, #888); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.subtitle { font-size: 13px; color: #aaa; margin-bottom: 30px; letter-spacing: 1px; }
+.input-field { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid #333; padding: 16px; border-radius: 15px; color: #fff; font-size: 16px; margin-bottom: 20px; outline: none; text-align: center; }
+.main-btn { width: 100%; padding: 16px; border: none; border-radius: 15px; background: linear-gradient(45deg, var(--accent), var(--secondary-glow)); color: #fff; font-weight: 700; cursor: pointer; font-family: 'Orbitron', sans-serif; letter-spacing: 1px; box-shadow: 0 10px 20px rgba(255,0,204,0.3); }
 
-/* --- TOGGLE BUTTONS --- */
-.toggle-box {
-  display: flex;
-  background: rgba(0,0,0,0.3);
-  padding: 5px;
-  border-radius: 15px;
-  margin-bottom: 25px;
+/* --- COMMUNITY --- */
+.comment-container {
+  width: 92%; max-width: 420px; background: var(--glass); border-radius: 25px; 
+  padding: 25px; margin: 20px auto 100px; border: 1px solid rgba(255,255,255,0.1);
 }
-.toggle-option {
-  flex: 1; padding: 12px; cursor: pointer; border-radius: 12px;
-  transition: 0.3s; font-weight: 600; color: #777;
-}
-.toggle-option.active {
-  background: #fff; color: #000; box-shadow: 0 5px 15px rgba(255,255,255,0.2);
-}
+.comment-list { max-height: 200px; overflow-y: auto; margin-bottom: 15px; }
+.single-comment { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 15px; margin-bottom: 10px; display: flex; gap: 12px; border-left: 4px solid var(--wa-green); }
 
-/* --- INPUT & BUTTON --- */
-.input-field {
-  width: 100%; background: rgba(255,255,255,0.05); border: 1px solid #333;
-  padding: 15px; border-radius: 12px; color: #fff; font-size: 16px;
-  margin-bottom: 20px; outline: none; transition: 0.3s;
-}
-.input-field:focus { border-color: #00d2ff; background: rgba(255,255,255,0.1); }
-
-.main-btn {
-  width: 100%; padding: 15px; border: none; border-radius: 12px;
-  background: #fff; color: #000; font-weight: 700; cursor: pointer;
-  transition: 0.3s; font-family: 'Orbitron', sans-serif;
-}
-.main-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(255,255,255,0.2); }
-
-/* --- DISPLAYS --- */
-.code-display {
-  margin-top: 20px; padding: 15px; border-radius: 12px;
-  background: rgba(255,255,255,0.05); border: 1px dashed #555;
-  font-family: monospace; font-size: 1.2rem; cursor: pointer;
-  display: none; justify-content: center; align-items: center;
-}
-.qr-display { display: none; margin-top: 20px; animation: fadeIn 0.5s; }
-.qr-display img { width: 220px; border-radius: 15px; border: 5px solid #fff; }
-
-/* --- FLOATING BUTTONS --- */
-.floating-btns { position: fixed; bottom: 30px; right: 30px; display: flex; flex-direction: column; gap: 15px; }
-.f-btn {
-  width: 55px; height: 55px; border-radius: 50%; display: flex;
-  align-items: center; justify-content: center; font-size: 24px;
-  color: #fff; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-}
+/* --- FLOATING --- */
+.floating-btns { position: fixed; bottom: 25px; right: 25px; display: flex; flex-direction: column; gap: 15px; z-index: 100; }
+.f-btn { width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; color: #fff; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.5); text-decoration: none; transition: 0.3s; }
+.f-btn:hover { transform: scale(1.1); }
 .wa-btn { background: #25d366; }
 .mu-btn { background: #ff0050; }
-.f-btn:hover { transform: scale(1.1) rotate(10deg); }
-
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.hidden-menu { opacity: 0; transform: translateY(40px) scale(0); pointer-events: none; }
 </style>
 </head>
 <body>
 
 <div id="preloader">
-  <div class="loader-logo">OSHIYA-MD</div>
+  <div class="loader-logo">OSHIYA</div>
   <div class="loader-bar"><div class="loader-progress"></div></div>
 </div>
 
 <div class="bg-animate"></div>
 
-<div class="container">
+<section class="welcome-screen" id="welcomeSection">
+  <h1 class="welcome-title">SELECT YOUR SYSTEM</h1>
+  <p class="welcome-sub">PREMIUM WHATSAPP BOT SESSION</p>
+  
+  <div class="select-container">
+    <div class="bot-card" onclick="startSession('MD')">
+      <i class="fas fa-robot"></i>
+      <h3>OSHIYA MD</h3>
+      <p>GENERATE QR CODE<br>(Advanced Version)</p>
+    </div>
+    
+    <div class="bot-card" onclick="startSession('MINI')">
+      <i class="fas fa-microchip"></i>
+      <h3>OSHIYA MINI</h3>
+      <p>PAIRING CODE<br>(Light Version)</p>
+    </div>
+  </div>
+</section>
+
+<div class="container" id="sessionBox">
   <div class="profile-area">
     <img src="https://raw.githubusercontent.com/oshadha12345/images/refs/heads/main/20251222_040815.jpg" alt="OSHIYA">
   </div>
+  <h1 class="title" id="botTitle">OSHIYA-MD</h1>
+  <p class="subtitle" id="botModeText">SESSION SYSTEM</p>
+  <br>
   
-  <h1 class="title">OSHIYA-MD</h1>
-  <p class="subtitle">PREMIUM SESSION SYSTEM</p>
-
-  <div class="toggle-box">
-    <div class="toggle-option active" id="pairMode">Pair Code</div>
-    <div class="toggle-option" id="qrMode">QR Scan</div>
+  <div id="inputGroup">
+    <input type="tel" id="numberInput" class="input-field" placeholder="94756xxxxxxx">
+    <button class="main-btn" id="genBtn"><i class="fas fa-bolt"></i> GET CODE</button>
+  </div>
+  
+  <div id="qrGroup" style="display:none;">
+    <div style="background:#fff; padding:10px; border-radius:15px; display:inline-block; margin-bottom:20px;">
+       <div id="qrDisplay" style="color:#000;">Loading QR...</div>
+    </div>
+    <p style="font-size:11px; color:#888;">Scan this QR within 20 seconds</p>
   </div>
 
-  <div id="inputSection">
-    <input type="text" id="numberInput" class="input-field" placeholder="94756xxxxxxx">
-    <button class="main-btn" id="genBtn">GENERATE CODE</button>
-  </div>
+  <div id="loading" style="display:none; margin-top: 15px;"><i class="fas fa-sync-alt fa-spin"></i> Connecting...</div>
+  <div class="code-display" id="codeOut" style="display:none;"></div>
+  
+  <button onclick="location.reload()" style="background:transparent; border:none; color:#555; margin-top:20px; font-size:10px; cursor:pointer;">← GO BACK</button>
+</div>
 
-  <div class="code-display" id="codeOut"></div>
-
-  <div class="qr-display" id="qrOut">
-    <img id="qrImg" src="" alt="QR">
-    <p style="font-size: 11px; margin-top: 10px; color: #888;">Scan this within 30 seconds</p>
-  </div>
-
-  <div id="loading" style="display:none; margin-top: 15px;">
-    <i class="fas fa-circle-notch fa-spin"></i> Processing...
+<div class="comment-container" id="chatSection" style="display:none;">
+  <h2 class="comment-title" style="font-size:14px;"><i class="fab fa-whatsapp"></i> GLOBAL COMMUNITY</h2>
+  <div class="comment-list" id="commentList"></div>
+  <div class="comment-form">
+      <input type="text" id="waMsg" class="wa-msg-input" placeholder="Say something..." style="width:100%; background:rgba(255,255,255,0.05); border:1px solid #333; padding:12px; border-radius:10px; color:#fff; outline:none;">
+      <button class="wa-send-btn" id="sendComment" style="width:100%; margin-top:10px; padding:10px; border-radius:10px; border:none; background:var(--wa-green); color:#fff; font-weight:600;">SEND</button>
   </div>
 </div>
 
 <div class="floating-btns">
-  <a href="https://wa.me/+94756599952" target="_blank" class="f-btn wa-btn"><i class="fab fa-whatsapp"></i></a>
   <div class="f-btn mu-btn" id="musicToggle"><i class="fas fa-music"></i></div>
+  <a href="https://wa.me/+94756599952" target="_blank" class="f-btn wa-btn"><i class="fab fa-whatsapp"></i></a>
 </div>
 
 <audio id="bgMusic" loop src="https://github.com/oshadha12345/images/raw/refs/heads/main/Voice/Voce%20na%20mira%20(slowed_tiktok%20vers.)%20-%20hwungii_%20dj%20vjk1%20%5Bedit%20audio%5D(MP3_160K).mp3"></audio>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
 <script>
-// Preloader Handler
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    document.getElementById('preloader').style.opacity = '0';
-    setTimeout(() => { document.getElementById('preloader').style.display = 'none'; }, 800);
-  }, 2000);
-});
-
-const pairMode = document.getElementById('pairMode');
-const qrMode = document.getElementById('qrMode');
-const inputSection = document.getElementById('inputSection');
-const codeOut = document.getElementById('codeOut');
-const qrOut = document.getElementById('qrOut');
-const loading = document.getElementById('loading');
-
-// Mode Switch
-pairMode.onclick = () => {
-  pairMode.classList.add('active');
-  qrMode.classList.remove('active');
-  inputSection.style.display = 'block';
-  qrOut.style.display = 'none';
-  codeOut.style.display = 'none';
+// --- PAGE LOAD ---
+window.onload = () => {
+    setTimeout(() => {
+        document.getElementById('preloader').style.opacity = '0';
+        setTimeout(() => document.getElementById('preloader').style.display = 'none', 800);
+    }, 1200);
 };
 
-qrMode.onclick = () => {
-  qrMode.classList.add('active');
-  pairMode.classList.remove('active');
-  inputSection.style.display = 'none';
-  codeOut.style.display = 'none';
-  loadQR();
-};
+// --- SESSION START LOGIC ---
+function startSession(type) {
+    const welcome = document.getElementById('welcomeSection');
+    const box = document.getElementById('sessionBox');
+    const chat = document.getElementById('chatSection');
+    const title = document.getElementById('botTitle');
+    const inputGrp = document.getElementById('inputGroup');
+    const qrGrp = document.getElementById('qrGroup');
 
-// Generate Pair Code
-document.getElementById('genBtn').onclick = async () => {
-  const num = document.getElementById('numberInput').value.replace(/[^0-9]/g,"");
-  if(!num) return alert("Please enter number!");
-  
-  loading.style.display = 'block';
-  codeOut.style.display = 'none';
+    welcome.style.display = 'none';
+    box.style.display = 'block';
+    chat.style.display = 'block';
 
-  try {
-    const res = await axios.get(`/pair?number=${num}`);
-    codeOut.innerHTML = `<span>${res.data.code}</span>`;
-    codeOut.style.display = 'flex';
-  } catch (e) {
-    alert("Connection Error!");
-  } finally {
-    loading.style.display = 'none';
-  }
-};
-
-async function loadQR() {
-  loading.style.display = 'block';
-  qrOut.style.display = 'none';
-  try {
-    const res = await axios.get('/qr');
-    if(res.data.qr) {
-      document.getElementById('qrImg').src = res.data.qr;
-      qrOut.style.display = 'block';
+    if(type === 'MD') {
+        title.innerText = "OSHIYA-MD";
+        inputGrp.style.display = 'none';
+        qrGrp.style.display = 'block';
+        // Auto-call QR logic here
+        generateQR();
+    } else {
+        title.innerText = "OSHIYA-MINI";
+        inputGrp.style.display = 'block';
+        qrGrp.style.display = 'none';
     }
-  } catch (e) {
-    alert("QR Failed!");
-  } finally {
-    loading.style.display = 'none';
-  }
 }
 
-// Copy Feature
-codeOut.onclick = () => {
-  const text = codeOut.innerText;
-  navigator.clipboard.writeText(text);
-  codeOut.style.background = "rgba(0,255,0,0.1)";
-  setTimeout(() => { codeOut.style.background = "rgba(255,255,255,0.05)"; }, 1000);
+// --- CORE API LOGIC ---
+async function generateQR() {
+    const qrOut = document.getElementById('qrDisplay');
+    try {
+        // Backend QR URL eka methanata danna
+        const res = await axios.get('/qr');
+        qrOut.innerHTML = `<img src="${res.data.qr}" width="200">`;
+    } catch(e) {
+        qrOut.innerHTML = `<span style="color:red; font-size:12px;">Server Offline</span>`;
+    }
+}
+
+document.getElementById('genBtn').onclick = async () => {
+    const num = document.getElementById('numberInput').value.replace(/[^0-9]/g,"");
+    if(!num) return alert("Enter Number!");
+    
+    const loading = document.getElementById('loading');
+    const codeOut = document.getElementById('codeOut');
+    
+    loading.style.display = 'block';
+    codeOut.style.display = 'none';
+
+    try {
+        const res = await axios.get(`/pair?number=${num}`);
+        codeOut.innerHTML = `<strong>PAIR CODE:</strong><br><span style="color:var(--neon-blue); font-size:28px;">${res.data.code}</span>`;
+        codeOut.style.display = 'block';
+    } catch (e) {
+        alert("Server Error! Check Backend.");
+    } finally {
+        loading.style.display = 'none';
+    }
 };
 
-// Music
+// --- MUSIC ---
 const mBtn = document.getElementById('musicToggle');
 const audio = document.getElementById('bgMusic');
 mBtn.onclick = () => {
-  if(audio.paused) { audio.play(); mBtn.style.animation = "pulse 1s infinite"; }
-  else { audio.pause(); mBtn.style.animation = "none"; }
+    if(audio.paused) { audio.play(); mBtn.style.boxShadow = "0 0 20px #ff0050"; }
+    else { audio.pause(); mBtn.style.boxShadow = "none"; }
+};
+
+// --- SIMPLE CHAT SIMULATION ---
+document.getElementById('sendComment').onclick = () => {
+    const msg = document.getElementById('waMsg').value;
+    if(!msg) return;
+    const list = document.getElementById('commentList');
+    const div = document.createElement('div');
+    div.className = 'single-comment';
+    div.innerHTML = `<div class="user-avatar" style="width:30px; height:30px; border-radius:50%; background:#555; display:flex; align-items:center; justify-content:center; font-size:10px;">U</div>
+                     <div class="comment-content"><div class="user-info" style="font-size:10px; color:var(--wa-green);">User</div><div class="user-msg" style="font-size:12px;">${msg}</div></div>`;
+    list.appendChild(div);
+    document.getElementById('waMsg').value = '';
+    list.scrollTop = list.scrollHeight;
 };
 </script>
 </body>
-</html>
+  </html>
