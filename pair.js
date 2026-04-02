@@ -1,7 +1,7 @@
 import express from "express";
 import fs from "fs";
 import pino from "pino";
-import mongoose from "mongoose"; // MongoDB connect kirima sandaha
+import mongoose from "mongoose";
 
 import {
     makeWASocket,
@@ -17,7 +17,6 @@ import pn from "awesome-phonenumber";
 const router = express.Router();
 
 // --- MONGODB CONFIGURATION ---
-// Oyage MongoDB Connection String eka methana danna
 const MONGO_URI = process.env.MONGODB_URI || "OYAGE_MONGODB_URL_METHANA_DANNA";
 
 const SessionSchema = new mongoose.Schema({
@@ -29,7 +28,9 @@ const SessionSchema = new mongoose.Schema({
 const SessionModel = mongoose.models.Session || mongoose.model("Session", SessionSchema);
 
 // MongoDB Connect kirima
-mongoose.connect(MONGO_URI).then(() => console.log("Connected to MongoDB ✅")).catch(err => console.error("MongoDB Connection Error:", err));
+mongoose.connect(MONGO_URI)
+    .then(() => console.log("Connected to MongoDB ✅"))
+    .catch(err => console.error("MongoDB Connection Error:", err));
 
 function removeFile(FilePath) {
     try {
@@ -83,30 +84,28 @@ router.get("/", async (req, res) => {
                     console.log("✅ Connected successfully!");
 
                     try {
-                        // Mega upload eka venuvata MongoDB walata save kirima
-                        const sessionID = "ᴏꜱʜɪʏᴀ~" + Math.random().toString(36).substring(2, 12).toUpperCase();
+                        // --- SESSION ID GENERATION (OSHIYA~ + 5 Characters) ---
+                        const randomID = Math.random().toString(36).substring(2, 7).toUpperCase();
+                        const sessionID = "ᴏꜱʜɪʏᴀ~" + randomID;
                         
                         await SessionModel.create({
                             sessionId: sessionID,
-                            creds: state.creds // creds.json eke data kelinma DB yanawa
+                            creds: state.creds 
                         });
 
                         console.log("✅ Session saved to MongoDB. ID:", sessionID);
 
                         const userJid = jidNormalizedUser(num + "@s.whatsapp.net");
 
-                        // WhatsApp ekata session ID eka yavuva
                         await KnightBot.sendMessage(userJid, {
                             text: `*Successfully Connected!* ⚡\n\n*Session ID:* ${sessionID}\n\nDon't share your session ID with anyone!`
                         });
 
                         console.log("📄 Session ID sent to WhatsApp");
 
-                        console.log("🧹 Cleaning up...");
+                        console.log("Cleaning up...");
                         await delay(2000);
                         removeFile(dirs);
-                        // Meeka API ekak nisa exit wenna ona na, eth oyaage code eke thibba nisa mama damma
-                        // process.exit(0); 
                     } catch (error) {
                         console.error("❌ MongoDB Save Error:", error);
                         removeFile(dirs);
